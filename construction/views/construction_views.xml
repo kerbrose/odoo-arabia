@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+  <!-- TOP MENU ITEM -->
+  <menuitem name="Construction"
+            id="construction.menu_construction"
+            web_icon="construction,static/description/icon.png"/>
+  <!-- TOP MENU ITEM -->
+
+  
+  <!-- SUB MENU CONFIGURATION -->
+  <menuitem name="Configurations" 
+            id="construction.menu_configuration" 
+            parent="construction.menu_construction"
+            sequence="500"
+            groups="construction.group_senior_engineer"
+            />
+  <!-- SUB MENU CONFIGURATION -->
+            
+</odoo>

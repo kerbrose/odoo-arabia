@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data noupdate="0">
+
+  
+    <!-- GROUP ENGINEERS -->
+    <record id="group_engineer" model="res.groups">
+        <field name="name">Engineers</field>
+        <field name="category_id" ref="base.module_category_specific_industry_applications"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <!-- GROUP ENGINEERS -->
+
+
+    <!-- GROUP SENIOR ENGINEER -->
+    <record id="group_senior_engineer" model="res.groups">
+        <field name="name">Senior Engineer</field>
+        <field name="category_id" ref="base.module_category_specific_industry_applications" />
+        <field name="implied_ids" eval="[(4, ref('construction.group_engineer'))]" />
+    </record>
+    <!-- GROUP SENIOR ENGINEER -->
+
+
+    <!-- GROUP ENGINEERING MANAGER -->
+    <record id="group_engineering_manager" model="res.groups">
+        <field name="name">Engineering Manager</field>
+        <field name="category_id" ref="base.module_category_specific_industry_applications" />
+        <field name="implied_ids" eval="[(4, ref('construction.group_senior_engineer'))]" />
+    </record>
+    <!-- GROUP ENGINEERING MANAGER -->
+
+</data>
+</odoo>

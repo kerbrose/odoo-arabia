@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_csi_master_format_user,csi.master.format.user,model_construction_master_format,base.group_user,1,0,0,0
+access_csi_master_format_engineer,csi.master.format.engineer,model_construction_master_format,construction.group_senior_engineer,1,1,1,0
