@@ -5,7 +5,7 @@
   <!-- ACTION WINDOW FOR CONSTRUCTION MENU -->
   <act_window 
       id="csi_master_format_action"
-      name="CSI Master Format Action"
+      name="CSI Master Format"
       res_model="construction.master.format" />
   <!-- ACTION WINDOW FOR CONSTRUCTION MENU -->
   
@@ -25,10 +25,10 @@
     <field name="name">CSI Master Format</field>
     <field name="model">construction.master.format</field>
     <field name="arch" type="xml">
-      <form>
+      <form string="CSI Master Format">
         <group>
           <field name="name"/>
-          <field name="parent_id" widget="many2many_tags"/>
+          <field name="parent_id" />
         </group>
         <group>
           <field name="description"/>
