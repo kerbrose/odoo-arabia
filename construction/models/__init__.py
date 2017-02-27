@@ -8,4 +8,6 @@
 # kerbrose  __hotmail__
 ###############################################
 
+from . import account_invoice
+from . import account_invoice_line
 from . import construction_master_format

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+  <!-- TREE VIEW: UPDATING TREE VIEW FOR ACCOUNT INVOICE LINE TO 
+       ADD CSI MASTER FORMAT -->
+  <record id="view_construction_account_invoice_line_form_inherit_purchase" model="ir.ui.view">
+    <field name="name">tree view construction.account_invoice_line</field>
+    <field name="model">account.invoice</field>
+    <field name="inherit_id" ref="account.invoice_supplier_form"/>
+    <field name="priority">100</field>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='account_analytic_id']" position="after">
+        <field name="csi_mf_id" />
+      </xpath>
+    </field>
+  </record>
+  <!-- TREE VIEW: UPDATING TREE VIEW FOR ACCOUNT INVOICE LINE TO 
+       ADD CSI MASTER FORMAT -->
+
+
+</odoo>

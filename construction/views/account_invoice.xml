@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+  <!-- FORM VIEW: UPDATING FORM VIEW FOR ACCOUNT INVOICE TO ADD
+       JOURNAL ID & PROJECT FIELDS -->
+  <record id="view_construction_account_invoice_form_inherit_purchase" model="ir.ui.view">
+    <field name="name">construction.account_invoice</field>
+    <field name="model">account.invoice</field>
+    <field name="inherit_id" ref="account.invoice_supplier_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='reference']" position="after">
+        <field name="analytic_id" />
+      </xpath>
+      <xpath expr="//field[@name='date_due']" position="after">
+        <field name="journal_id" />
+      </xpath>
+    </field>
+  </record>
+  <!-- FORM VIEW: UPDATING FORM VIEW FOR ACCOUNT INVOICE TO ADD
+       JOURNAL ID & PROJECT FIELDS -->
+
+
+</odoo>

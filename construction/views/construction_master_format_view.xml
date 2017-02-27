@@ -52,21 +52,5 @@
   </record>
   <!-- TREE VIEW FOR MASTER FORMAT -->
 
-  
-  <!-- custom search filters library.book -->
-  <!-- <record id="library_book_view_search" model="ir.ui.view">
-    <field name="name">Library Book Search</field>
-    <field name="model">library.book</field>
-    <field name="arch" type="xml">
-      <search>
-        <field name="name"/>
-        <field name="short_name"/>
-        <field name="author_ids"/>
-        <filter string="No Authors" domain="[('author_ids','=',False)]"/>
-      </search>
-    </field>
-  </record> -->
-  <!-- custom search filters library.book -->
-
 
 </odoo>
