@@ -19,6 +19,8 @@
     'sequence': 13,
     'version': '10.0.0.1',
     'depends': ['base_setup',
+                'account_accountant',
+                'account_analytic_default',
                 'purchase',
                 ],
     'data': ['security/construction_security.xml',
