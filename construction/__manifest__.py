@@ -27,6 +27,7 @@
              'security/ir.model.access.csv',
              'views/account_invoice.xml',
              'views/account_invoice_line.xml',
+             'views/assets.xml',
              'views/construction_views.xml',
              'views/construction_master_format_view.xml',
              ],

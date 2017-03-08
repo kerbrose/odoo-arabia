@@ -1,0 +1,8 @@
+/* @author kerbrose
+ * License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl). */
+ 
+ 
+body {
+	font-family: "Droid Arabic Naskh", "Lucida Grande", Helvetica, Verdana, Arial, sans-serif;
+    src: url(/construction/static/src/font/droidnaskh.ttf);
+}

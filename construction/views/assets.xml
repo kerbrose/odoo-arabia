@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+  <!-- ADDING CSS TO THE MAIN -->
+  <template id="assets_font_arabic" name="Droid Naskh Font" inherit_id="web.assets_backend">
+    <xpath expr=".">
+      <link rel="stylesheet"
+            type="text/css"
+            href="/construction/static/src/css/main.css"
+            />
+    </xpath>
+  </template>
+  <!-- ADDING CSS TO THE MAIN -->
+
+
+</odoo>
