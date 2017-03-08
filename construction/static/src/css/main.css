@@ -3,11 +3,11 @@
 
 
 @font-face {
-	font-family: 'Green Sans Web';
-	src: url('/construction/static/src/font/droidnaskh.ttf');
+	font-family: 'Droid';
+	src: url('/construction/static/src/fonts/droidnaskh.ttf');
 } 
 
 
 body {
-	font-family: "Droid Arabic Naskh", "Lucida Grande", Helvetica, Verdana, Arial, sans-serif;
+	font-family: "Droid", "Lucida Grande", Helvetica, Verdana, Arial, sans-serif;
 }
