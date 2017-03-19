@@ -14,10 +14,11 @@ from odoo.exceptions import UserError
 class AccountInvoice(models.Model):
     _inherit = 'account.invoice'
     
-    analytic_id = fields.Many2one('account.analytic.account', string='Project',
-                                       required=True, states={'draft': [('readonly', False)]},
-                                       )
-
+    
+    analytic_id = fields.Many2one('account.analytic.account',
+                                  string='Project',
+                                  states={'draft': [('readonly', False)]},
+                                  )
 
     @api.multi
     def line_get_convert(self, line, part):
@@ -25,3 +26,4 @@ class AccountInvoice(models.Model):
         line_value = super(AccountInvoice, self).line_get_convert(line, part)
         line_value['csi_mf_id'] = self.env['account.invoice.line'].browse(line_id).csi_mf_id.id
         return line_value
+
