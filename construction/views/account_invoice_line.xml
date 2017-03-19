@@ -10,6 +10,9 @@
     <field name="inherit_id" ref="account.invoice_supplier_form"/>
     <field name="priority">100</field>
     <field name="arch" type="xml">
+      <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='account_analytic_id']" position="attributes">
+        <attribute name="domain">[('tag_ids', '=', 'Project')]</attribute>
+      </xpath>
       <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='account_analytic_id']" position="after">
         <field name="csi_mf_id" />
       </xpath>
