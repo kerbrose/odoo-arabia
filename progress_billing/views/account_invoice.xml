@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+  <!-- UPDATING FORM VIEW FOR ACCOUNT INVOICE -->
+  <record model="ir.ui.view" id="account_invoice_k_form_view">
+    <field name="name">account.invoice (progress bills)</field>
+        <field name="model">account.invoice</field>
+        <field name="inherit_id" ref="analytic.view_account_analytic_account_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']/button[@name=%(analytic.account_analytic_line_action)d]" position="attributes">
+                <attribute name="groups">account_analytic_no_lines.hide_analytic_entries</attribute>
+            </xpath>
+        </field>
+  </record>
+  <!-- UPDATING FORM VIEW FOR ACCOUNT INVOICE -->
+
+
+</odoo>

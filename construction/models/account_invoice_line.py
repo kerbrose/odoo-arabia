@@ -32,9 +32,10 @@ class AccountInvoiceLine(models.Model):
     
     @api.onchange('account_analytic_id')
     def _onchange_account_analytic_id(self):
-        analytic_id = self._context.get('analytic_id')
-        account_analytic_id = self.env['account.analytic.account'].search([('id', '=', analytic_id)], limit=1)
-        self.account_analytic_id = account_analytic_id
+        if not self.account_analytic_id:
+            analytic_id = self._context.get('analytic_id')
+            account_analytic_id = self.env['account.analytic.account'].search([('id', '=', analytic_id)], limit=1)
+            self.account_analytic_id = account_analytic_id
 
         
 

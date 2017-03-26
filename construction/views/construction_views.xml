@@ -8,6 +8,16 @@
             web_icon="construction,static/description/icon.png"/>
   <!-- TOP MENU ITEM -->
 
+
+  <!-- SUB MENU SUBCONTRACTING -->
+  <menuitem name="Subcontracts" 
+            id="construction.menu_subcontracting" 
+            parent="construction.menu_construction"
+            sequence="10"
+            groups="construction.group_engineer"
+            />
+  <!-- SUB MENU SUBCONTRACTING -->
+  
   
   <!-- SUB MENU CONFIGURATION -->
   <menuitem name="Configurations" 
