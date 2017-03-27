@@ -105,8 +105,8 @@
                     name="action_view_progress_bill"
                     class="oe_stat_button"
                     icon="fa-pencil-square-o" attrs="{'invisible':[('state', '=', 'draft'),('invoice_ids','=',[])]}">
-              <field name="invoice_count" widget="statinfo" string="Subcontractor Bills"/>
-              <field name='invoice_ids' invisible="1"/>
+              <field name="bill_count" widget="statinfo" string="Subcontractor Bills"/>
+              <field name='bill_ids' invisible="1"/>
             </button> 
           </div>
           <div class="oe_title">

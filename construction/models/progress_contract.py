@@ -48,6 +48,10 @@ class ProgressContract(models.Model):
     
     amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_amount_all')
     
+    bill_count = fields.Integer(compute="_compute_bill", string='# of Bills', copy=False, default=0)
+    
+    bill_ids = fields.Many2many('progress.bill', compute="_compute_bill", string='Bills', copy=False)
+    
     company_id = fields.Many2one('res.company', 'Company', required=True, index=True, states=READONLY_STATES, default=lambda self: self.env.user.company_id.id)
     
     contract_line = fields.One2many('progress.contract.line', 'contract_id', string='Contract Lines', states={'cancel': [('readonly', True)], 'done': [('readonly', True)]}, copy=True)
@@ -66,6 +70,10 @@ class ProgressContract(models.Model):
     partner_id = fields.Many2one('res.partner', string='Contractor', required=True, states=READONLY_STATES, change_default=True, track_visibility='always')
     
     partner_ref = fields.Char('Contractor Reference', copy=False,)
+    
+    bill_count = fields.Integer(compute="_compute_invoice", string='# of Bills', copy=False, default=0)
+    
+    bill_ids = fields.Many2many('progress.bill', compute="_compute_invoice", string='Bills', copy=False)
     
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -186,7 +194,7 @@ class ProgressContractLine(models.Model):
     
     date_planned = fields.Datetime(string='Scheduled Date', required=True, index=True)
     
-    #invoice_lines = fields.One2many('account.invoice.line', 'progress_line_id', string="Bill Lines", readonly=True, copy=False)
+    bill_lines = fields.One2many('progress.bill.line', 'progress_line_id', string="Bill Lines", readonly=True, copy=False)
     
     name = fields.Text(string='Description', required=True)
     
