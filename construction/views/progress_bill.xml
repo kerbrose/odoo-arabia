@@ -2,116 +2,106 @@
 <odoo>
 
 
-  <!-- FILTERS FOR PARTNER CONTRACTOR -->
-  <record id="view_res_partner_contractor_filter" model="ir.ui.view">
-    <field name="name">res.partner.contractor.select</field>
-    <field name="model">res.partner</field>
-    <field name="inherit_id" ref="base.view_res_partner_filter"/>
-    <field name="arch" type="xml">
-      <xpath expr="//filter[@name='customer']" position="after">
-        <filter string="Contractors" name="contractor" domain="[('supplier','=',1), ('category_id', '=', 'Contractor')]"/>
-      </xpath>
-    </field>
-  </record>
-  <!-- FILTERS FOR PARTNER CONTRACTOR -->
-  
-  
-  <!-- FILTERS FOR PROGRESS CONTRACT -->
-  <record id="view_progress_contract_filter" model="ir.ui.view">
-    <field name="name">progress.contract.select</field>
-    <field name="model">progress.contract</field>
+  <!-- FILTERS FOR PROGRESS BILL -->
+  <record id="view_progress_bills_filter" model="ir.ui.view">
+    <field name="name">progress.bill.select</field>
+    <field name="model">progress.bill</field>
     <field name="arch" type="xml">
       <search string="Search Subcontracts">
         <field name="name" string="Reference"
                filter_domain="['|','|',('name','=',self),('partner_ref','ilike',self)]"/>
         <field name="partner_id" operator="child_of"/>
         <field name="create_uid"/>
-        <filter name="draft" string="Draft Subcontracts" domain="[('state','=', 'draft')]"/>
-        <filter name="confirm" string="Running Subcontracts" domain="[('state','=', 'confirm')]"/>
-        <filter name="done" string="Finished Subcontracts" domain="[('state','=', 'done')]"/>
+        <filter name="draft" string="Draft Bills" domain="[('state','=', 'draft')]"/>
+        <filter name="approved" string="Approved Bills" domain="[('state','=', 'approved')]"/>
+        <filter name="running" string="Open Bills" domain="[('state','=', 'running'), ('last_bill','=', True)]"/>
         <group expand="0" string="Group By">
           <filter string="Contractor" domain="[]" context="{'group_by':'partner_id'}"/>
           <filter string="Project" domain="[]" context="{'group_by':'account_analytic_id'}"/>
-          <filter string="Order Date" domain="[]" context="{'group_by':'date_order'}"/>
+          <filter string="Order Date" domain="[]" context="{'group_by':'date'}"/>
         </group>
       </search>
     </field>
   </record>
-  <!-- FILTERS FOR PROGRESS CONTRACT -->
-  
+  <!-- FILTERS FOR PROGRESS BILL -->
 
-  <!-- ACTION WINDOW FOR DRAFT SUBCONTRACTING MENU -->
-  <record id="draft_progress_contract_action" model="ir.actions.act_window">
-    <field name="name">Draft Subcontracts</field>
+
+  <!-- ACTION WINDOW FOR PROGRESS BILLS -->
+  <record id="contract_progress_bill_action" model="ir.actions.act_window">
+    <field name="name">Bills</field>
     <field name="type">ir.actions.act_window</field>
-    <field name="res_model">progress.contract</field>
+    <field name="res_model">progress.bill</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree,form</field>
+    <field name="context">{'default_type': 'in_invoice', 'type': 'in_invoice', 'journal_type': 'purchase'}</field>
+    <field name="search_view_id" ref="view_progress_bills_filter"/>
+  </record>
+  <!-- ACTION WINDOW FOR PROGRESS BILLS -->
+
+
+  <!-- ACTION WINDOW FOR DRAFT PROGRESS BILLS MENU -->
+  <record id="draft_progress_bill_action" model="ir.actions.act_window">
+    <field name="name">Draft Bills</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">progress.bill</field>
     <field name="view_type">form</field>
     <field name="view_mode">tree,form</field>
     <field name="context">{"search_default_draft":1}</field>
-    <field name="search_view_id" ref="view_progress_contract_filter"/>
+    <field name="search_view_id" ref="view_progress_bills_filter"/>
   </record>
-  <!-- ACTION WINDOW FOR DRAFT SUBCONTRACTING MENU -->
-  
-  <!-- ACTION WINDOW FOR SUBCONTRACTING MENU -->
-  <record id="progress_contract_action" model="ir.actions.act_window">
-    <field name="name">Subcontracts</field>
+  <!-- ACTION WINDOW FOR DRAFT PROGRESS BILLS MENU -->
+
+
+  <!-- ACTION WINDOW FOR APPROVED PROGRESS BILLS MENU -->
+  <record id="approved_progress_bill_action" model="ir.actions.act_window">
+    <field name="name">Approved Bills</field>
     <field name="type">ir.actions.act_window</field>
-    <field name="res_model">progress.contract</field>
+    <field name="res_model">progress.bill</field>
     <field name="view_type">form</field>
     <field name="view_mode">tree,form</field>
-    <field name="context">{"search_default_confirm":1}</field>
-    <field name="search_view_id" ref="view_progress_contract_filter"/>
+    <field name="context">{"search_default_approved":1}</field>
+    <field name="search_view_id" ref="view_progress_bills_filter"/>
   </record>
-  <!-- ACTION WINDOW FOR SUBCONTRACTING MENU -->
-  
-  
-  <!-- MENU DRAFT SUBCONTRACT -->
-  <menuitem
-      id="draft_progress_contract_menu"
-      name="Draf Subcontracts"
-      action="draft_progress_contract_action"
-      parent="construction.menu_subcontracting"
-      sequence="10" />
-  <!-- MENU DRAFT SUBCONTRACT -->
-  
-  
-  <!-- MENU SUBCONTRACTS -->
-  <menuitem
-      id="running_progress_contract_menu"
-      name="Subcontracts"
-      action="progress_contract_action"
-      parent="construction.menu_subcontracting"
-      sequence="20" />
-  <!-- MENU SUBCONTRACTS -->
+  <!-- ACTION WINDOW FOR APPROVED PROGRESS BILLS MENU -->
 
 
-  <!-- FORMVIEW FOR PROGRESS CONTRACT -->
-  <record id="progress_contract_view_form" model="ir.ui.view">
-    <field name="name">Draft Subcontracts</field>
-    <field name="model">progress.contract</field>
+  <!-- MENU DRAFT PROGRESS BILLS -->
+  <menuitem
+      id="draft_progress_bill_menu"
+      name="Draf Bills"
+      action="draft_progress_bill_action"
+      parent="construction.menu_subcontracting"
+      sequence="30" />
+  <!-- MENU DRAFT PROGRESS BILLS -->
+  
+  
+  <!-- MENU PROGRESS BILLS -->
+  <menuitem
+      id="running_progress_bill_menu"
+      name="Approved Bills"
+      action="approved_progress_bill_action"
+      parent="construction.menu_subcontracting"
+      sequence="40" />
+  <!-- MENU PROGRESS BILLS -->
+
+
+  <!-- FORMVIEW FOR PROGRESS BILL -->
+  <record id="progress_bill_view_form" model="ir.ui.view">
+    <field name="name">Progress Bill</field>
+    <field name="model">progress.bill</field>
     <field name="arch" type="xml">
-      <form string="Draft Subcontract">
+      <form string="Contractor Bill">
         <header>
-          <button name="button_confirm" type="object" states="draft" string="Confirm Order" class="oe_highlight" id="draft_confirm"/>
-          <button name="button_draft" states="cancel" string="Set to Draft" type="object" groups="construction.group_senior_engineer" />
-          <button name="button_cancel" states="draft,confirm" string="Cancel" type="object" />
-          <button name="button_done" type="object" string="Lock" states="confirm"/>
-          <button name="button_unlock" type="object" string="Unlock" states="done" groups="construction.group_engineering_manager"/>
-          <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done,cancel" readonly="1"/>
+          <button name="button_confirm" type="object" states="draft" string="Confirm" class="oe_highlight" id="draft_confirm" groups="construction.group_senior_engineer"/>
+          <button name="button_draft" type="object" states="cancel" string="Set to Draft" groups="construction.group_senior_engineer" />
+          <button name="button_cancel" states="draft,open" string="Cancel" type="object" />
+          <button name="button_approve" type="object" string="Approve" states="open"/>
+          <field name="state" widget="statusbar" statusbar_visible="draft,open,approved,running,done,cancel" readonly="1"/>
         </header>
         <sheet>
-          <div class="oe_button_box" name="button_box">
-            <button type="object" 
-                    name="action_view_progress_bill"
-                    class="oe_stat_button"
-                    icon="fa-pencil-square-o" attrs="{'invisible':[('state', 'in', ('draft', 'open', 'approved', 'running','done')),('progress_bill_ids','=',[])]}">
-              <field name="progress_bill_count" widget="statinfo" string="Progress"/>
-              <field name='progress_bill_ids' invisible="1"/>
-            </button> 
-          </div>
           <div class="oe_title">
-            <label string="Draft Progress Contract " attrs="{'invisible': [('state','not in',('draft'))]}"/>
-            <label string="Progress Contract " attrs="{'invisible': [('state','in',('draft'))]}"/>
+            <label string="Draft Progress Bill" attrs="{'invisible': [('state','not in',('draft'))]}"/>
+            <label string="Progress Bill" attrs="{'invisible': [('state','in',('draft'))]}"/>
             <h1>
               <field name="name" readonly="1"/>
             </h1>
@@ -119,18 +109,19 @@
           <group>
             <group>
               <field name="partner_id" context="{'search_default_contractor':1}" domain="[('supplier','=',True), ('category_id', '=', 'Contractor')]"/>
-              <field name="partner_ref"/>
+              <field name="reference"/>
               <field name="account_analytic_id" domain="[('tag_ids', '=', 'Project')]" />
               <field name="currency_id" groups="base.group_multi_currency"/>
             </group>
             <group>
-              <field name="date_order"/>
+              <field name="date"/>
+              <field name="number" />
               <field name="origin" attrs="{'invisible': [('origin','=',False)]}"/>
               <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
             </group>
           </group>
           <!-- NOTEBOOK -->
-          <notebook>
+          <!-- <notebook>
             <page string="Work Category">
               <field name="contract_line" attrs="{'readonly': [('state', 'in', ('done', 'cancel'))]}">
                 <tree string="Contract Lines" editable="bottom">
@@ -148,8 +139,8 @@
                   <field name="account_analytic_id" domain="[('tag_ids', '=', 'Project')]" context="{'default_partner_id':parent.partner_id}"/>
                   <field name="analytic_tag_ids" groups="construction.group_engineer" widget="many2many_tags"/>
                   <field name="product_qty"/>
-                  <!-- <field name="qty_received" invisible="not context.get('show_purchase', False)"/>
-                  <field name="qty_invoiced" invisible="not context.get('show_purchase', False)"/> -->
+                  <field name="qty_received" invisible="not context.get('show_purchase', False)"/>
+                  <field name="qty_invoiced" invisible="not context.get('show_purchase', False)"/>
                   <field name="product_uom" groups="product.group_uom" attrs="{'readonly': [('state', 'in', ('purchase', 'done', 'cancel'))]}"/>
                   <field name="price_unit"/>
                   <field name="price_subtotal" widget="monetary"/>
@@ -174,7 +165,7 @@
                        <field name="name"/>
                      </page>
                      <page string="Invoices and Incoming Shipments">
-                       <!-- <field name="invoice_lines"/> -->
+                       <field name="invoice_lines"/>
                      </page>
                    </notebook>
                  </sheet>
@@ -189,7 +180,7 @@
               <field name="notes" class="oe_inline" placeholder="An administrator can set up default Terms and conditions in your Company settings."/>
               <div class="oe_clear"/>
             </page>
-          </notebook>
+          </notebook> -->
           <!-- NOTEBOOK -->
         </sheet>
         <!-- MESSAGING VIEW -->
@@ -201,20 +192,20 @@
       </form>
     </field>
   </record>
-  <!-- FORMVIEW FOR PROGRESS CONTRACT -->
+  <!-- FORMVIEW FOR PROGRESS BILL -->
 
 
-  <!-- TREE VIEW FOR PROGRESS CONTRACT --> 
-  <record id="draft_progress_contract_view_tree" model="ir.ui.view">
-    <field name="name">Draft Subcontracts</field>
-    <field name="model">progress.contract</field>
+  <!-- TREE VIEW FOR PROGRESS BILL --> 
+  <record id="draft_progress_bill_view_tree" model="ir.ui.view">
+    <field name="name">Progress Bills</field>
+    <field name="model">progress.bill</field>
     <field name="arch" type="xml">
       <tree>
         <field name="name"/>
       </tree>
     </field>
   </record>
-  <!-- TREE VIEW FOR MASTER FORMAT -->
+  <!-- TREE VIEW FOR PROGRESS BILL -->
 
 
 </odoo>

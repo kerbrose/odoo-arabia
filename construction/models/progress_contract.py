@@ -40,17 +40,26 @@ class ProgressContract(models.Model):
             contract.update({
                 'amount_total': amount_total,
             })
+            
+    @api.depends('contract_line.progress_bill_lines.bill_id.state')
+    def _compute_progress_bill(self):
+        for contract in self:
+            progress_bills = self.env['progress.bill']
+            for line in contract.contract_line:
+                progress_bills |= line.progress_bill_lines.mapped('bill_id')
+            contract.progress_bill_ids = progress_bills
+            contract.progress_bill_count = len(progress_bills)
     
-    account_analytic_id = analytic_id = fields.Many2one('account.analytic.account',
+    account_analytic_id = fields.Many2one('account.analytic.account',
                                   string='Project',
                                   states=READONLY_STATES,
                                   )
     
     amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_amount_all')
     
-    bill_count = fields.Integer(compute="_compute_bill", string='# of Bills', copy=False, default=0)
+    progress_bill_count = fields.Integer(compute="_compute_progress_bill", string='# of Bills', copy=False, default=0)
     
-    bill_ids = fields.Many2many('progress.bill', compute="_compute_bill", string='Bills', copy=False)
+    progress_bill_ids = fields.Many2many('progress.bill', compute="_compute_progress_bill", string='Bills', copy=False)
     
     company_id = fields.Many2one('res.company', 'Company', required=True, index=True, states=READONLY_STATES, default=lambda self: self.env.user.company_id.id)
     
@@ -71,10 +80,6 @@ class ProgressContract(models.Model):
     
     partner_ref = fields.Char('Contractor Reference', copy=False,)
     
-    bill_count = fields.Integer(compute="_compute_invoice", string='# of Bills', copy=False, default=0)
-    
-    bill_ids = fields.Many2many('progress.bill', compute="_compute_invoice", string='Bills', copy=False)
-    
     state = fields.Selection([
         ('draft', 'Draft'),
         ('confirm', 'Confirmed'),
@@ -82,6 +87,41 @@ class ProgressContract(models.Model):
         ('cancel', 'Cancelled'),
         ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
     
+#     @api.multi
+#     def action_view_progress_bill(self):
+#         '''
+#         This function returns an action that display existing progress bills of a given contract ids.
+#         When only one found, show the vendor bill immediately.
+#         '''
+#         action = self.env.ref('construction.contract_progress_bill_action')
+#         result = action.read()[0]
+# 
+#         #override the context to get rid of the default filtering
+#         result['context'] = {'default_contract_id': self.id}
+# 
+#         if not self.progress_bill_ids:
+#             # Choose a default account journal in the same currency in case a new invoice is created
+#             journal_domain = [
+#                 ('type', '=', 'purchase'),
+#                 ('company_id', '=', self.company_id.id),
+#                 ('currency_id', '=', self.currency_id.id),
+#             ]
+#             default_journal_id = self.env['account.journal'].search(journal_domain, limit=1)
+#             if default_journal_id:
+#                 result['context']['default_journal_id'] = default_journal_id.id
+#         else:
+#             # Use the same account journal than a previous invoice
+#             #result['context']['default_journal_id'] = self.progress_bill_ids[0].journal_id.id
+#             pass
+# 
+#         #choose the view_mode accordingly
+#         if len(self.progress_bill_ids) != 1:
+#             result['domain'] = "[('id', 'in', " + str(self.progress_bill_ids.ids) + ")]"
+#         elif len(self.invoice_ids) == 1:
+#             res = self.env.ref('account.invoice_supplier_form', False)
+#             result['views'] = [(res and res.id or False, 'form')]
+#             result['res_id'] = self.invoice_ids.id
+#         return result
     
     @api.multi
     def button_cancel(self):
@@ -193,9 +233,7 @@ class ProgressContractLine(models.Model):
     date_order = fields.Datetime(related='contract_id.date_order', string='Order Date', readonly=True)
     
     date_planned = fields.Datetime(string='Scheduled Date', required=True, index=True)
-    
-    bill_lines = fields.One2many('progress.bill.line', 'progress_line_id', string="Bill Lines", readonly=True, copy=False)
-    
+        
     name = fields.Text(string='Description', required=True)
     
     partner_id = fields.Many2one('res.partner', related='contract_id.partner_id', string='Partner', readonly=True, store=True)
@@ -214,6 +252,8 @@ class ProgressContractLine(models.Model):
     #qty_invoiced = fields.Float(compute='_compute_qty_invoiced', string="Billed Qty", store=True)
     
     #qty_received = fields.Float(compute='_compute_qty_received', string="Received Qty", store=True)
+    
+    progress_bill_lines = fields.One2many('progress.bill.line', 'contract_line_id', string="Bill Lines", readonly=True, copy=False)
         
     sequence = fields.Integer(string='Sequence', default=10)
     

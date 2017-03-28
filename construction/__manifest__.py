@@ -31,6 +31,7 @@
              'views/assets.xml',
              'views/construction_views.xml',
              'views/construction_master_format_view.xml',
+             'views/progress_bill.xml',
              'views/progress_contract.xml',
              ],
     'demo': [ ],

@@ -24,24 +24,6 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-# mapping invoice type to journal type
-TYPE2JOURNAL = {
-    'out_invoice': 'sale',
-    'in_invoice': 'purchase',
-    'out_refund': 'sale',
-    'in_refund': 'purchase',
-}
-
-# mapping invoice type to refund type
-TYPE2REFUND = {
-    'out_invoice': 'out_refund',        # Customer Invoice
-    'in_invoice': 'in_refund',          # Vendor Bill
-    'out_refund': 'out_invoice',        # Customer Refund
-    'in_refund': 'in_invoice',          # Vendor Refund
-}
-
-MAGIC_COLUMNS = ('id', 'create_uid', 'create_date', 'write_uid', 'write_date')
-
 
 class ProgressBill(models.Model):
     _name = 'progress.bill'
@@ -58,8 +40,9 @@ class ProgressBill(models.Model):
     
     @api.model
     def _default_currency(self):
-        journal = self._default_journal()
         return self.env.user.company_id.currency_id
+    
+    account_analytic_id = fields.Many2one('account.analytic.account', string='Project')
     
     amount_net = fields.Monetary(string='Current Bill Net', store=True,
                                  readonly=True, compute='_compute_amount')
@@ -95,6 +78,10 @@ class ProgressBill(models.Model):
                        help="Keep empty to use the invoice date.",
                        readonly=True, states={'draft': [('readonly', False)]})
     
+    final_bill = fields.Boolean(string='Final Bill')
+    
+    last_bill = fields.Boolean(string='Last Bill')
+    
     money_retention_total = fields.Monetary(string='Total Money Retention', store=True,
                                             readonly=True, compute='_compute_amount')
     
@@ -102,10 +89,10 @@ class ProgressBill(models.Model):
                        states={'draft': [('readonly', False)]}, copy=False,
                        help='The name that will be used on account move lines')
     
-    number = fields.Integer(string='Number', required=True, default=lambda self: self._get_default_number)
+    number = fields.Integer(string='Number', required=True, default=lambda self: self._get_default_number())
     
     origin = fields.Char(string='Source Document',
-                         help="Reference of the document that produced this invoice.",
+                         help="Reference of the document that produced this bill.",
                          readonly=True, states={'draft': [('readonly', False)]})
     
     partner_id = fields.Many2one('res.partner', string='Partner', change_default=True,
@@ -121,22 +108,40 @@ class ProgressBill(models.Model):
     previous_amount_total = fields.Monetary(string='Total Amount of Previous Bill', store=True,
                                             readonly=True, compute='_compute_amount')
     
-    progress_line_ids = fields.One2many('progress.bill.line', 'bill_id', string='Bill Lines',
+    progress_bill_line_ids = fields.One2many('progress.bill.line', 'bill_id', string='Bill Lines',
                                         readonly=True, states={'draft': [('readonly', False)]}, copy=True)
     
     reference = fields.Char(string='Contractor Reference',
                             help="The partner reference of this invoice.",
                             readonly=True, states={'draft': [('readonly', False)]})
+    
+    state = fields.Selection([
+            ('draft','Draft'),
+            ('open', 'Confirmed'),
+            ('approved', 'Approved'),
+            ('running', 'Running'),
+            ('done', 'Done'),
+            ('cancel', 'Cancelled'),
+        ], string='Status', index=True, readonly=True, default='draft',
+        track_visibility='onchange', copy=False,
+        help=" * The 'Draft' status is used when a user is creating a new and unconfirmed Invoice.\n"
+             " * The 'Confirmed' status is used when the progress bill is approved by the engineers.\n"
+             " * The 'Approved' status is used when it gets approved by Financial Department.\n"
+             " * The 'Running' status is used when it is still in progress.\n"
+             " * The 'done' status is set automatically when the final progress bill initiated.\n"
+             " * The 'Cancelled' status is used when user cancel invoice.")
+    
+    def _get_default_number(self):
+        """Return the progress bill number."""
+        if not self.contract_id:
+            return 1
+        if self.contract_id:
+            return 0
 
 class ProgressBillLine(models.Model):
     _name = "progress.bill.line"
     _description = "Bill Line"
     _order = "bill_id,sequence,id"
-    
-    account_id = fields.Many2one('account.account', string='Account',
-                                 required=True, domain=[('deprecated', '=', False)],
-                                 default=_default_account,
-                                 help="The income or expense account related to the selected product.")
     
     analytic_tag_ids = fields.Many2many('account.analytic.tag', string='Analytic Tags')
     
@@ -151,8 +156,8 @@ class ProgressBillLine(models.Model):
     company_id = fields.Many2one('res.company', string='Company', related='bill_id.company_id',
                                  store=True, readonly=True)
     
-    contract_id = fields.Many2one('progress.contract', related='contract_line_id.contract_id', string='Progress Contract', store=False, readonly=True,
-                                  help='Associated Purchase Order. Filled in automatically when a PO is chosen on the vendor bill.')
+    #contract_id = fields.Many2one('progress.contract', related='contract_line_id.contract_id', string='Progress Contract', store=False, readonly=True,
+    #                              help='Associated Purchase Order. Filled in automatically when a PO is chosen on the vendor bill.')
     
     contract_line_id = fields.Many2one('progress.contract.line', 'Progress Contract Line', ondelete='set null', index=True, readonly=True)
     
