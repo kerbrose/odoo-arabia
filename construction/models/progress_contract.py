@@ -87,41 +87,20 @@ class ProgressContract(models.Model):
         ('cancel', 'Cancelled'),
         ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
     
-#     @api.multi
-#     def action_view_progress_bill(self):
-#         '''
-#         This function returns an action that display existing progress bills of a given contract ids.
-#         When only one found, show the vendor bill immediately.
-#         '''
-#         action = self.env.ref('construction.contract_progress_bill_action')
-#         result = action.read()[0]
-# 
-#         #override the context to get rid of the default filtering
-#         result['context'] = {'default_contract_id': self.id}
-# 
-#         if not self.progress_bill_ids:
-#             # Choose a default account journal in the same currency in case a new invoice is created
-#             journal_domain = [
-#                 ('type', '=', 'purchase'),
-#                 ('company_id', '=', self.company_id.id),
-#                 ('currency_id', '=', self.currency_id.id),
-#             ]
-#             default_journal_id = self.env['account.journal'].search(journal_domain, limit=1)
-#             if default_journal_id:
-#                 result['context']['default_journal_id'] = default_journal_id.id
-#         else:
-#             # Use the same account journal than a previous invoice
-#             #result['context']['default_journal_id'] = self.progress_bill_ids[0].journal_id.id
-#             pass
-# 
-#         #choose the view_mode accordingly
-#         if len(self.progress_bill_ids) != 1:
-#             result['domain'] = "[('id', 'in', " + str(self.progress_bill_ids.ids) + ")]"
-#         elif len(self.invoice_ids) == 1:
-#             res = self.env.ref('account.invoice_supplier_form', False)
-#             result['views'] = [(res and res.id or False, 'form')]
-#             result['res_id'] = self.invoice_ids.id
-#         return result
+    @api.multi
+    def action_view_progress_bill(self):
+        '''
+        This function returns an action that display existing progress bills of a given contract ids.
+        When only one found, show the vendor bill immediately.
+        '''
+        action = self.env.ref('construction.contract_progress_bill_action')
+        result = action.read()[0]
+ 
+        #override the context to get rid of the default filtering
+        result['context'] = {'default_contract_id': self.id}
+        result['domain'] = "[('id', 'in', " + str(self.progress_bill_ids.ids) + ")]"
+        
+        return result
     
     @api.multi
     def button_cancel(self):
@@ -129,7 +108,7 @@ class ProgressContract(models.Model):
 #             for inv in order.invoice_ids:
 #                 if inv and inv.state not in ('cancel', 'draft'):
 #                     raise UserError(_("Unable to cancel this purchase order. You must first cancel related vendor bills."))
-            if contract.state in ['draft']:
+            if contract.state == 'draft':
                 return True
             if contract.user_has_groups('construction.group_senior_engineer'):
                 self.write({'state': 'cancel'})
@@ -139,7 +118,7 @@ class ProgressContract(models.Model):
     @api.multi
     def button_confirm(self):
         for contract in self:
-            if contract.state not in ['draft']:
+            if contract.state != 'draft':
                 continue
             if not contract.user_has_groups('construction.group_senior_engineer'):
                 continue
@@ -186,34 +165,21 @@ class ProgressContractLine(models.Model):
                 'price_subtotal': (line.price_unit * line.product_qty),
             })
     
-    @api.depends('invoice_lines.invoice_id.state')
+    @api.depends('progress_bill_lines')
     def _compute_qty_invoiced(self):
         for line in self:
             qty = 0.0
-#             for inv_line in line.invoice_lines:
-#                 if inv_line.invoice_id.state not in ['cancel']:
-#                     qty += inv_line.uom_id._compute_quantity(inv_line.quantity, line.product_uom)
+            for bill_line in line.progress_bill_lines:
+                if bill_line.bill_id.state != 'cancel':
+                    qty += bill_line.product_uom._compute_quantity(inv_line.quantity, line.product_uom)
             line.qty_invoiced = qty
-    
-    @api.depends('contract_id.state')
-    def _compute_qty_received(self):
-        for line in self:
-            line.qty_received = 0.0
-#             if line.order_id.state not in ['purchase', 'done']:
-#                 line.qty_received = 0.0
-#                 continue
-#             if line.product_id.type not in ['consu', 'product']:
-#                 line.qty_received = line.product_qty
-#                 continue
-#             total = 0.0
-#             for move in line.move_ids:
-#                 if move.state == 'done':
-#                     if move.product_uom != line.product_uom:
-#                         total += move.product_uom._compute_quantity(move.product_uom_qty, line.product_uom)
-#                     else:
-#                         total += move.product_uom_qty
-#             line.qty_received = total
 
+    @api.model
+    def _default_account_analytic_id(self):
+        if self._context.get('analytic_id'):
+            analytic_id = int(self._context.get('analytic_id'))
+            analytic = self.env['account.analytic.account'].search([('id', '=', analytic_id)], limit=1)
+            return analytic
     
     account_analytic_id = fields.Many2one('account.analytic.account', string='Project')
     
@@ -246,12 +212,10 @@ class ProgressContractLine(models.Model):
     
     product_qty = fields.Float(string='Quantity', digits=dp.get_precision('Product Unit of Measure'), required=True)
     
-    product_uom = fields.Many2one('product.uom', string='Product Unit of Measure', required=True)
+    product_uom = fields.Many2one('product.uom', string='UOM', required=True)
 
     # Replace by invoiced Qty
-    #qty_invoiced = fields.Float(compute='_compute_qty_invoiced', string="Billed Qty", store=True)
-    
-    #qty_received = fields.Float(compute='_compute_qty_received', string="Received Qty", store=True)
+    qty_invoiced = fields.Float(compute='_compute_qty_invoiced', string="Billed Qty", store=True)
     
     progress_bill_lines = fields.One2many('progress.bill.line', 'contract_line_id', string="Bill Lines", readonly=True, copy=False)
         
@@ -277,6 +241,14 @@ class ProgressContractLine(models.Model):
             return datetime.strptime(date_order, DEFAULT_SERVER_DATETIME_FORMAT) + relativedelta(days=seller.delay if seller else 0)
         else:
             return datetime.today() + relativedelta(days=seller.delay if seller else 0)
+    
+    @api.onchange('account_analytic_id')
+    def _onchange_account_analytic_id(self):
+        if not self.account_analytic_id:
+            analytic_id = self._context.get('analytic_id')
+            account_analytic_id = self.env['account.analytic.account'].search([('id', '=', analytic_id)], limit=1)
+            self.account_analytic_id = account_analytic_id
+    
     @api.onchange('product_id')
     def _onchange_product_id(self):
         result = {}
