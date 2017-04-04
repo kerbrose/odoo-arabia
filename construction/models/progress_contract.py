@@ -161,7 +161,7 @@ class ProgressContractLine(models.Model):
         for line in self:
             qty = 0.0
             for bill_line in line.progress_bill_lines:
-                if bill_line.bill_id.state != 'cancel':
+                if bill_line.bill_id.state not in ['draft', 'cancel']:
                     qty += bill_line.product_uom._compute_quantity(bill_line.quantity, bill_line.product_uom)
             line.qty_invoiced = qty
 

@@ -42,32 +42,23 @@ class ProgressBill(models.Model):
     @api.one
     @api.depends('name')
     def _compute_amount(self):
-        self.amount_net = 0.0
+        #self.amount_net = 0.0
         self.amount_current_to_be_paid = 0.0
         self.amount_previous_current_net = 0.0
         self.money_retention_total = 0.0
-        self.amount_total = 0.0
-        self.previous_paid_total = 0.0
-        self.previous_amount_total = 0.0
-        
+        #self.amount_total = 0.0
+        #self.previous_paid_total = 0.0
+        #self.previous_amount_total = 0.0
+
     @api.one
     @api.depends('progress_bill_line_ids')
-    def _compute_amount_total(self):
-        for line in self.progress_bill_line_ids:
-            continue
+    def _compute_amounts(self):
+            self.amount_current_total = 0.0
+            self.amount_total = 0.0
+            for line in self.progress_bill_line_ids:
+                self.amount_current_total += line.price_subtotal 
+                self.amount_total += line.price_total
     
-    
-    @api.depends('progress_bill_line_ids')
-    def _compute_penalty_amount_total(self):
-        for bill in self:
-            penalty_amount_total = 0.0
-            for line in bill.progress_bill_line_ids:
-                penalty_amount_total += line.discount 
-            bill.update({
-                'penalty_amount_total': penalty_amount_total,
-            })
-
-
         
     @api.model
     def _default_currency(self):
@@ -75,13 +66,15 @@ class ProgressBill(models.Model):
     
     account_analytic_id = fields.Many2one('account.analytic.account', string='Project', required=True, states=READONLY_STATES)
     
-    amount_net = fields.Monetary(string='Current Bill Net', store=True, readonly=True, compute='_compute_amount')
+    amount_current_total = fields.Monetary(string='Current Bill Net', store=True, readonly=True, compute='_compute_amounts')
     
     amount_current_to_be_paid = fields.Monetary(string='Payment', store=True, readonly=True, compute='_compute_amount')
     
     amount_previous_current_net = fields.Monetary(string='Current Bill Net', store=True, readonly=True, compute='_compute_amount')
     
-    amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_compute_amount')
+    amount_previous_total = fields.Monetary(string='Total Amount of Previous Bill', store=True, readonly=True, compute='_compute_amounts')
+    
+    amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_compute_amounts')
     
     comment = fields.Text('Additional Information', readonly=True, states=READONLY_STATES)
     
@@ -111,11 +104,7 @@ class ProgressBill(models.Model):
     
     partner_id = fields.Many2one('res.partner', string='Partner', change_default=True, required=True, states=READONLY_STATES, track_visibility='always')
     
-    penalty_amount_total = fields.Monetary(string='Total Penalties', store=True, readonly=True, compute='_compute_penalty_amount_total')
-    
     previous_paid_total = fields.Monetary(string='Total Previously', store=True, readonly=True, compute='_compute_amount')
-    
-    previous_amount_total = fields.Monetary(string='Total Amount of Previous Bill', store=True, readonly=True, compute='_compute_amount')
     
     progress_bill_line_ids = fields.One2many('progress.bill.line', 'bill_id', string='Bill Lines', readonly=True, states=READONLY_STATES, copy=True)
     
@@ -201,22 +190,17 @@ class ProgressBillLine(models.Model):
     @api.one
     @api.depends('price_unit', 'discount', 'quantity')
     def _compute_price(self):
-        price_subtotal = float((self.price_unit * self.quantity) - self.discount)
-        self.price_subtotal = price_subtotal
-    
+        self.price_subtotal = float((self.price_unit * self.quantity) - self.discount)
+        self.price_total = float((self.price_unit * self.qty_total) - self.discount_total - self.discount)
 
     @api.depends('contract_line_id')
-    def _get_estimated_quantity(self):
+    def _get_previous_defaults(self):
         for line in self:
             line.qty_accepted = line.contract_line_id.product_qty
-            
-    @api.depends('contract_line_id')
-    def _get_previous_quantity(self):
-        for line in self:
             for previous_line in line.contract_line_id.progress_bill_lines:
                 if previous_line.bill_id.id < line.bill_id.id:
                     line.qty_previous += previous_line.quantity
-    
+                    line.discount_total += previous_line.discount    
     
     bill_id = fields.Many2one('progress.bill', string='Bill Reference', ondelete='cascade', index=True)
     
@@ -234,13 +218,17 @@ class ProgressBillLine(models.Model):
     
     discount = fields.Float(string='Discount', digits=dp.get_precision('Discount'), default=0.0)
     
+    discount_total = fields.Float(string='Total Penalties', required=True, store=True, compute='_get_previous_defaults')
+    
     name = fields.Text(string='Description', required=True)
     
     origin = fields.Char(string='Source Document')
     
     partner_id = fields.Many2one('res.partner', string='Partner', related='bill_id.partner_id', store=True, readonly=True)
     
-    price_subtotal = fields.Monetary(string='Amount', store=True, readonly=True, compute='_compute_price')
+    price_subtotal = fields.Monetary(string='Current Amount', store=True, readonly=True, compute='_compute_price')
+    
+    price_total = fields.Monetary(string='Total Amount', store=True, readonly=True, compute='_compute_price')
     
     price_unit = fields.Float(string='Unit Price', required=True, digits=dp.get_precision('Product Price'))
     
@@ -254,9 +242,9 @@ class ProgressBillLine(models.Model):
     #current quantity
     quantity = fields.Float(string='Quantity', digits=dp.get_precision('Product Unit of Measure'), store=True, required=True)
     
-    qty_accepted = fields.Float(string='Estimated Quantity', required=True, store=True, compute='_get_estimated_quantity')
+    qty_accepted = fields.Float(string='Estimated Quantity', required=True, store=True, compute='_get_previous_defaults')
     
-    qty_previous = fields.Float(string='Previous Quantity', required=True, store=True, compute='_get_previous_quantity')
+    qty_previous = fields.Float(string='Previous Quantity', required=True, store=True, compute='_get_previous_defaults')
     
     qty_total = fields.Float(string='Total Quantity', required=True, store=True, digits=dp.get_precision('Product Unit of Measure'))
     
@@ -274,24 +262,25 @@ class ProgressBillLine(models.Model):
     def _onchange_progress_percentage(self):
         self.quantity = float((self.qty_accepted * self.progress_percentage / 100) - self.qty_previous)
         self.qty_total = float(self.qty_accepted * self.progress_percentage / 100)
+        if self.quantity < 0:
+            warning = {
+                'title': _('Warning!'),
+                'message': _('Quantity is not acceptable'),
+                }
+            return {'warning':warning}
     
 
     @api.onchange('quantity')
     def _onchange_quantity(self):
-            qty_total = float(self.qty_previous + self.quantity)
+        qty_total = float(self.qty_previous + self.quantity)
+        if self.qty_accepted != 0:
             self.progress_percentage = float(qty_total * 100 / self.qty_accepted)
-            self.qty_total = qty_total
+        self.qty_total = qty_total
     
 
     @api.onchange('qty_total')
     def _onchange_qty_total(self):
-            if self.qty_accepted == 0:
-                warning = {
-                    'title': _('Warning!'),
-                    'message': _('The line does not have estimated quantity'),
-                    }
-                return {'warning': warning}
+        if self.qty_accepted != 0:
             self.progress_percentage = float((self.qty_total / self.qty_accepted) * 100 )
             self.quantity = float(self.qty_total - self.qty_previous)
-    
-
+            

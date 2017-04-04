@@ -145,8 +145,10 @@
                   <field name="price_unit"/>
                   <field name="discount" />
                   <field name="price_subtotal" widget="monetary"/>
+                  <field name="discount_total" />
+                  <field name="price_total" widget="monetary"/>
                </tree>
-               <form string="Contract Line">
+               <form string="Bill Line">
                  <sheet>
                    <group>
                      <group>
@@ -159,10 +161,8 @@
                </form>
                 </field>
               <group class="oe_subtotal_footer oe_right">
-                <div class="oe_subtotal_footer_separator oe_inline">
-                  <label for="penalty_amount_total"/>
-                </div>
-                <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field string="Net for current bill" name="amount_current_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
               </group>
               <div class="oe_clear"/>
             </page>
