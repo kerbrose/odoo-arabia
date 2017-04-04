@@ -27,12 +27,23 @@
     <record id="seq_progress_contract" model="ir.sequence">
       <field name="name">Progress Contract</field>
       <field name="code">progress.contract</field>
-      <field name="prefix">Sub</field>
+      <field name="prefix">SUB/%(range_year)s/</field>
       <field name="padding">5</field>
       <field name="company_id" eval="False"/>
     </record>
     <!-- SEQUENCE FOR PRGRESS CONTRACT -->
 
-    
+
+    <!-- SEQUENCE FOR PRGRESS BILL -->
+    <record id="seq_progress_bill" model="ir.sequence">
+      <field name="name">Progress Bill</field>
+      <field name="code">progress.bill</field>
+      <field name="prefix">PGB/%(range_year)s/</field>
+      <field name="padding">5</field>
+      <field name="company_id" eval="False"/>
+    </record>
+    <!-- SEQUENCE FOR PRGRESS BILL -->
+
+
   </data>
 </odoo>

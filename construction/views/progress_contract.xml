@@ -59,7 +59,7 @@
     <field name="res_model">progress.contract</field>
     <field name="view_type">form</field>
     <field name="view_mode">tree,form</field>
-    <field name="context">{"search_default_confirm":1}</field>
+    <field name="context">{"search_default_confirm":1, 'show_purchase': True}</field>
     <field name="search_view_id" ref="view_progress_contract_filter"/>
   </record>
   <!-- ACTION WINDOW FOR SUBCONTRACTING MENU -->
@@ -172,8 +172,8 @@
                      <page string="Notes">
                        <field name="name"/>
                      </page>
-                     <page string="Invoices and Incoming Shipments">
-                       <!-- <field name="invoice_lines"/> -->
+                     <page string="Progress Bill Lines">
+                       <field name="progress_bill_lines"/>
                      </page>
                    </notebook>
                  </sheet>

@@ -50,10 +50,7 @@ class ProgressContract(models.Model):
             contract.progress_bill_ids = progress_bills
             contract.progress_bill_count = len(progress_bills)
     
-    account_analytic_id = fields.Many2one('account.analytic.account',
-                                  string='Project',
-                                  states=READONLY_STATES,
-                                  )
+    account_analytic_id = fields.Many2one('account.analytic.account', string='Project', states=READONLY_STATES)
     
     amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_amount_all')
     
@@ -152,12 +149,6 @@ class ProgressContractLine(models.Model):
     _name = 'progress.contract.line'
     _description = 'Progress Contract Line'
     
-    READONLY_STATES = {
-        'confirm': [('readonly', True)],
-        'done': [('readonly', True)],
-        'cancel': [('readonly', True)],
-    }
-    
     @api.depends('product_qty', 'price_unit')
     def _compute_amount(self):
         for line in self:
@@ -171,7 +162,7 @@ class ProgressContractLine(models.Model):
             qty = 0.0
             for bill_line in line.progress_bill_lines:
                 if bill_line.bill_id.state != 'cancel':
-                    qty += bill_line.product_uom._compute_quantity(inv_line.quantity, line.product_uom)
+                    qty += bill_line.product_uom._compute_quantity(bill_line.quantity, bill_line.product_uom)
             line.qty_invoiced = qty
 
     @api.model
@@ -185,10 +176,7 @@ class ProgressContractLine(models.Model):
     
     analytic_tag_ids = fields.Many2many('account.analytic.tag', string='Analytic Tags')
     
-    csi_mf_id = fields.Many2one('construction.master.format',
-                                string='CSI MF',
-                                states=READONLY_STATES,
-                                )
+    csi_mf_id = fields.Many2one('construction.master.format', string='CSI MF')
     
     currency_id = fields.Many2one(related='contract_id.currency_id', store=True, string='Currency', readonly=True)
     
