@@ -125,7 +125,7 @@
             <page string="Progress">
               <field name="progress_bill_line_ids" attrs="{'readonly': [('state', 'in', ('open','approved','running','done','cancel'))]}"
                      context="{'analytic_id': account_analytic_id}" >
-                <tree string="Progress Lines" editable="bottom">
+                <tree string="Progress Lines" editable="bottom" colors="red:not contract_line_id">
                   <field name="contract_line_id" invisible="1" />
                   <field name="origin" invisible="1" />
                   <field name="currency_id" invisible="1"/>

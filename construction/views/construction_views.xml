@@ -14,7 +14,7 @@
             id="construction.menu_subcontracting" 
             parent="construction.menu_construction"
             sequence="10"
-            groups="construction.group_engineer"
+            groups="construction.group_engineer,construction.group_senior_engineer"
             />
   <!-- SUB MENU SUBCONTRACTING -->
   
