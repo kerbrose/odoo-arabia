@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  
+  
+  <!-- ACTION WINDOW FOR QUANTITY BILL -->
+  <record id="contract_progress_bill_action" model="ir.actions.act_window">
+    <field name="name">Bill of Quantity</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">quantity.bill</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree,form</field>
+    <field name="context">{}</field>
+  </record>
+  <!-- ACTION WINDOW FOR QUANTITY BILL -->
+  
+  
+  <!-- MENU DRAFT QUANTITY BILL -->
+  <menuitem
+      id="draft_quantity_bill_menu"
+      name="Draf BOQs"
+      action="construction.contract_progress_bill_action"
+      parent="construction.menu_subcontracting"
+      sequence="5" />
+  <!-- MENU DRAFT QUANTITY BILL -->
+  
+  
+  <!-- FORMVIEW FOR QUANTITY BILL -->
+  <record id="quantity_bill_view_form" model="ir.ui.view">
+    <field name="name">BOQ</field>
+    <field name="model">quantity.bill</field>
+    <field name="arch" type="xml">
+      <form string="BOQ">
+        <header>
+          <button name="button_confirm" type="object" states="draft"      string="Confirm" class="oe_highlight" id="draft_confirm" groups="construction.group_senior_engineer"/>
+          <button name="button_draft"   type="object" states="cancel"     string="Set to Draft" groups="construction.group_senior_engineer" />
+          <button name="button_cancel"  type="object" states="confirm,done"    string="Cancel"       groups="construction.group_senior_engineer" />
+          <button name="button_done"    type="object" states="confirm"    string="Done"         groups="construction.group_senior_engineer" />
+          <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done,cancel" readonly="1"/>
+        </header>
+        <sheet>
+          <div class="oe_title">
+            <label string="BOQ" />
+            <h1>
+              <field name="seq" readonly="1"/>
+            </h1>
+          </div>
+          <group>
+            <group>
+              <field name="name" string="Land Name" required="1" attrs="{'readonly': [('state', 'in', ('confirm', 'done','cancel'))]}" />
+              <field name="partner_id" string="Developer" domain="[('supplier','=',True), ('category_id', '=', 'Developer')]" required="1" attrs="{'readonly': [('state', 'in', ('confirm', 'done','cancel'))]}" />
+              <field name="currency_id" groups="base.group_multi_currency"/>
+            </group>
+            <group>
+              <field name="tag_ids" widget="many2many_tags" />
+              <field name="date" string="Date"/>
+              <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+            </group>
+          </group>
+          <!-- NOTEBOOK -->
+          <notebook>
+            <page string="Progress">
+              <field name="quantity_bill_lines" attrs="{'readonly': [('state', 'in', ('done','cancel'))]}" >
+                <tree string="BOQ Lines" editable="bottom" >
+                  <field name="currency_id" invisible="1"/>
+                  <field name="sequence" widget="handle"/>
+                  <field name="csi_mf_id" string="CSI" required="1" />
+                  <field name="name"/>
+                  <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                  <field name="uom_id" string="UOM" groups="product.group_uom" />
+                  <field name="quantity"/>
+                  <field name="price_unit"/>
+                  <field name="price_subtotal" widget="monetary"/>
+                </tree>
+               <form string="BOQ Lines">
+                 <sheet>
+                   <group>
+                     <group>
+                       <field name="name"/>
+                       <field name="csi_mf_id" string="CSI" required="1"/>
+                       <field name="uom_id" string="UOM" groups="product.group_uom" />
+                       <field name="quantity"/>
+                       <field name="price_unit" />
+                     </group>
+                   </group>
+                 </sheet>
+               </form>
+                </field>
+              <group class="oe_subtotal_footer oe_right">
+                <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+              </group>
+              <div class="oe_clear"/>
+            </page>
+          </notebook>
+          <!-- NOTEBOOK -->
+        </sheet>
+        <!-- MESSAGING VIEW -->
+        <div class="oe_chatter">
+          <field name="message_follower_ids" widget="mail_followers"/>
+          <field name="message_ids" widget="mail_thread"/>
+        </div>
+        <!-- MESSAGING VIEW -->
+      </form>
+    </field>
+  </record>
+  <!-- FORMVIEW FOR PROGRESS INVOICE -->
+
+
+  <!-- TREE VIEW FOR PROGRESS INVOICE --> 
+  <record id="progress_invoice_view_tree" model="ir.ui.view">
+    <field name="name">Progress Invoice</field>
+    <field name="model">quantity.bill</field>
+    <field name="arch" type="xml">
+      <tree>
+        <field name="seq"/>
+        <field name="state" invisible="1"/>
+        <field name="date"/>
+      </tree>
+    </field>
+  </record>
+  <!-- TREE VIEW FOR PROGRESS INVOICE -->
+  
+  
+  
+</odoo>

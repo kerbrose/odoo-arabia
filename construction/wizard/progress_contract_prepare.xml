@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- FORM VIEW FOR PROGRESS CONTRACT PREPARE -->
+  <record id="progress_contract_prepare_wizard_form" model="ir.ui.view">
+    <field name='name'>progress.contract.prepare.form</field>
+    <field name='model'>progress.contract.prepare</field>
+    <field name='arch' type='xml'>
+      <form string='Preparing Contracts'>
+        <sheet>
+          <h3>Please select BOQs</h3>
+          <field name="boq_id" required="1"/>
+          <h3>Please select CSI</h3>
+          <field name="csi_target" string="CSI" />
+          <h3>Please select a contractor</h3>
+          <field name="partner_id" string="Subcontractor" domain="[('supplier','=',True), ('category_id', '=', 'Contractor')]" />
+        </sheet>
+        <footer>
+          <button name='generate_progress_contract' string='Prepare Contract' class='oe_highlight' type='object' />
+          <span class="or_cancel" >
+            <button special="cancel" string="Close" type="object" class="oe_link oe_inline pull-right"/>
+          </span>
+        </footer>
+      </form>
+    </field>
+  </record>
+  <!-- FORM VIEW FOR PROGRESS CONTRACT PREPARE -->
+
+
+  <!-- ACTION FOR GENERATING PROGRESS CONTRACTS -->
+  <act_window
+        id="action_prepare_progress_contract"
+        name="Create Subcontract"
+        groups="construction.group_senior_engineer"
+        res_model="progress.contract.prepare"
+        src_model="quantity.bill"
+        target="new"
+        key2="client_action_multi"
+        view_mode="form"/>
+  <!-- ACTION FOR GENERATING PROGRESS CONTRACTS -->
+  
+
+</odoo>

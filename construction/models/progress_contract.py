@@ -176,7 +176,9 @@ class ProgressContractLine(models.Model):
     
     analytic_tag_ids = fields.Many2many('account.analytic.tag', string='Analytic Tags')
     
-    csi_mf_id = fields.Many2one('construction.master.format', string='CSI MF')
+    boq_line_id = fields.Many2one('quntity.bill.line', string='BOQ')
+    
+    csi_mf_id = fields.Many2one('construction.master.format', string='CSI MF', required=True,)
     
     currency_id = fields.Many2one(related='contract_id.currency_id', store=True, string='Currency', readonly=True)
     
@@ -196,7 +198,7 @@ class ProgressContractLine(models.Model):
     
     price_unit = fields.Float(string='Unit Price', required=True, digits=dp.get_precision('Product Price'))
     
-    product_id = fields.Many2one('product.product', string='Product', domain=[('purchase_ok', '=', True), ('type', '=', 'service')], change_default=True, required=True)
+    product_id = fields.Many2one('product.product', string='Product', domain=[('purchase_ok', '=', True), ('type', '=', 'service')], change_default=True,)
     
     product_qty = fields.Float(string='Quantity', digits=dp.get_precision('Product Unit of Measure'), required=True)
     

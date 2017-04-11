@@ -14,4 +14,6 @@ from . import account_move_line
 from . import construction_master_format
 from . import progress_bill
 from . import progress_contract
+from . import purchase
+from . import quantity_bill
 from . import res_partner

@@ -44,6 +44,25 @@
     </record>
     <!-- SEQUENCE FOR PRGRESS BILL -->
 
-
+    <!-- SEQUENCE FOR PRGRESS INVOICE -->
+    <record id="seq_progress_invoice" model="ir.sequence">
+      <field name="name">Progress Invoice</field>
+      <field name="code">progress.invoice</field>
+      <field name="prefix">PGI/%(range_year)s/</field>
+      <field name="padding">5</field>
+      <field name="company_id" eval="False"/>
+    </record>
+    <!-- SEQUENCE FOR PRGRESS INVOICE -->
+    
+    <!-- SEQUENCE FOR QUANTITY BILL -->
+    <record id="seq_quantity_bill" model="ir.sequence">
+      <field name="name">BOQ</field>
+      <field name="code">quantity.bill</field>
+      <field name="prefix">BOQ/%(range_year)s/</field>
+      <field name="padding">5</field>
+      <field name="company_id" eval="False"/>
+    </record>
+    <!-- SEQUENCE FOR QUANTITY BILL -->
+    
   </data>
 </odoo>
