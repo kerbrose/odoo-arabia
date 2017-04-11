@@ -28,6 +28,7 @@ _logger = logging.getLogger(__name__)
 class ProgressBill(models.Model):
     _name = 'progress.bill'
     _inherit = ['mail.thread']
+    _inherits = {'account.invoice':'account_invoice_id'}
     _description = "Progress Invoice"
     _order = "date desc, number desc, id desc"
     
@@ -65,6 +66,8 @@ class ProgressBill(models.Model):
         return self.env.user.company_id.currency_id
     
     account_analytic_id = fields.Many2one('account.analytic.account', string='Project', required=True, states=READONLY_STATES)
+    
+    #account_invoice_id = fields.Many2one('account.invoice', required=True, ondelete='restrict')
     
     amount_current_total = fields.Monetary(string='Current Bill Net', store=True, readonly=True, compute='_compute_amounts')
     
@@ -120,14 +123,6 @@ class ProgressBill(models.Model):
         ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
     
     
-#     @api.model
-#     def _get_default_number(self):
-#         """Return the progress bill number."""
-#         if not self.contract_id:
-#             return 1
-#         if self.contract_id:
-#             return self.contract_id.progress_bill_count + 1
-    
     def _prepare_progress_bill_line_from_pc_line(self, pc_line):
         qty = pc_line.product_qty - pc_line.qty_invoiced
         
@@ -178,7 +173,7 @@ class ProgressBill(models.Model):
         if not self.origin:
             self.origin = ''
         self.origin += self.contract_id.name
-        self.contract_id = False
+        self.number = self.contract_id.progress_bill_count
         return {}
 
 

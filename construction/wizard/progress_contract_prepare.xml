@@ -35,7 +35,6 @@
         res_model="progress.contract.prepare"
         src_model="quantity.bill"
         target="new"
-        key2="client_action_multi"
         view_mode="form"/>
   <!-- ACTION FOR GENERATING PROGRESS CONTRACTS -->
   

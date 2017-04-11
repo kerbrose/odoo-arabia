@@ -56,7 +56,7 @@ class ProgressContractPrepare(models.TransientModel):
                 'contract_line': contract_lines,
                 }
             contract = PROGRESSCONTRACT.create(progress_contract)
-            action = self.env.ref('construction.contract_progress_bill_action')
+            action = self.env.ref('construction.draft_progress_contract_menu')
             result = action.read()[0]
             result['active_model'] = 'progress.contract'
             result['res_model'] = 'progress.contract'

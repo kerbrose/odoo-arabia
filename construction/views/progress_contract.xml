@@ -133,9 +133,10 @@
           <notebook>
             <page string="Work Category">
               <field name="contract_line" attrs="{'readonly': [('state', 'in', ('done', 'cancel'))]}" context="{'analytic_id': account_analytic_id}">
-                <tree string="Contract Lines" editable="bottom">
+                <tree string="Contract Lines" editable="bottom" colors="blue:not boq_line_id">
                   <field name="currency_id" invisible="1"/>
                   <field name="state" invisible="1"/>
+                  <field name="boq_line_id" invisible="1" />
                   <field name="sequence" widget="handle"/>
                   <field name="product_id" 
                          domain="[('type','=','service')]"

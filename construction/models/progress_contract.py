@@ -255,7 +255,11 @@ class ProgressContractLine(models.Model):
             'lang': self.partner_id.lang,
             'partner_id': self.partner_id.id,
         })
-        self.name = product_lang.display_name
+        if self.name:
+            self.name += '\n' + product_lang.display_name
+        else:
+            self.name = product_lang.display_name
+        
         if product_lang.description_purchase:
             self.name += '\n' + product_lang.description_purchase
 

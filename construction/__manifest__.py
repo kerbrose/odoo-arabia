@@ -33,7 +33,6 @@
              'views/construction_master_format_view.xml',
              'views/progress_bill.xml',
              'views/progress_contract.xml',
-             #'views/progress_invoice.xml',
              'views/quantity_bill.xml',
              'wizard/progress_contract_prepare.xml',
              ],

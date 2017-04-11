@@ -3,7 +3,7 @@
   
   
   <!-- ACTION WINDOW FOR QUANTITY BILL -->
-  <record id="contract_progress_bill_action" model="ir.actions.act_window">
+  <record id="quantity_bill_action" model="ir.actions.act_window">
     <field name="name">Bill of Quantity</field>
     <field name="type">ir.actions.act_window</field>
     <field name="res_model">quantity.bill</field>
@@ -18,7 +18,7 @@
   <menuitem
       id="draft_quantity_bill_menu"
       name="Draf BOQs"
-      action="construction.contract_progress_bill_action"
+      action="construction.quantity_bill_action"
       parent="construction.menu_subcontracting"
       sequence="5" />
   <!-- MENU DRAFT QUANTITY BILL -->
