@@ -66,7 +66,7 @@ class ProgressBill(models.Model):
     @api.depends('number', 'contract_id')
     def _compute_amount_previous_total(self):
         self.amount_previous_total = 0.0
-        previous_bill_number = Int(self.number) - 1
+        previous_bill_number = int(self.number) - 1
         if previous_bill_number == 0:
             self.amount_previous_total = 0.0
         else:
@@ -91,7 +91,7 @@ class ProgressBill(models.Model):
     
     account_analytic_id = fields.Many2one('account.analytic.account', string='Project', required=True, states=READONLY_STATES)
     
-    account_invoice_id = fields.Many2one('account.invoice', string='bill', required=True, ondelete='restrict')
+    #account_invoice_id = fields.Many2one('account.invoice', string='bill', required=True, ondelete='restrict')
     
     amount_current_total = fields.Monetary(string='Current Bill Net', store=True, readonly=True, compute='_compute_amounts')
     
@@ -126,6 +126,8 @@ class ProgressBill(models.Model):
     money_retention_current = fields.Monetary(string='Money Retention', store=True, readonly=True, compute='_compute_money_retention')
     
     money_retention_total = fields.Monetary(string='Total Money Retention', store=True, readonly=True, compute='_compute_money_retention')
+    
+    name = fields.Char(string='Progress Bill', required=True, index=True, copy=False, default='New')
     
     number = fields.Integer(string='Number', required=True, states=READONLY_STATES)
     
@@ -171,6 +173,17 @@ class ProgressBill(models.Model):
         }
         return data
     
+    @api.multi
+    def button_confirm(self):
+        for progress in self:
+            if progress.state != 'draft':
+                continue
+            if not progress.user_has_groups('construction.group_senior_engineer'):
+                continue
+            if progress.user_has_groups('construction.group_senior_engineer'):
+                progress.write({'state': 'open'})
+        return True
+    
     @api.model
     def create(self, vals):
         if vals.get('name', 'New') == 'New':
@@ -182,12 +195,14 @@ class ProgressBill(models.Model):
         for progress_bill in self:
             AccountInvoice = self.env['account.invoice']
             journal = self.env['account.journal'].search([('code', '=', 'PRJ')], limit=1)
-            invoice_vals = {'parnter_id': self.partner_id.id,
+            invoice_vals = {'name': self.name,
+                            'partner_id': self.partner_id.id,
                             'account_id': self.partner_id.property_account_payable_id.id,
-                            'journal_id': journal,
+                            'journal_id': journal.id,
+                            'type': 'in_invoice',
                             }
             invoice_lines = []
-            for line in progress_bill:
+            for line in progress_bill.progress_bill_line_ids:
                 invoice_lines.append([0, False, {'account_analytic_id':progress_bill.account_analytic_id.id,
                                                  'product_id': line.product_id.id,
                                                  'csi_mf_id': line.csi_mf_id.id,

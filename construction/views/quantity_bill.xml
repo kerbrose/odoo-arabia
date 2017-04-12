@@ -17,7 +17,7 @@
   <!-- MENU DRAFT QUANTITY BILL -->
   <menuitem
       id="draft_quantity_bill_menu"
-      name="Draf BOQs"
+      name="Draft BOQs"
       action="construction.quantity_bill_action"
       parent="construction.menu_subcontracting"
       sequence="5" />

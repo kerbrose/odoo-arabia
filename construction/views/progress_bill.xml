@@ -67,7 +67,7 @@
   <!-- MENU DRAFT PROGRESS BILLS -->
   <menuitem
       id="draft_progress_bill_menu"
-      name="Draf Bills"
+      name="Draft Bills"
       action="draft_progress_bill_action"
       parent="construction.menu_subcontracting"
       sequence="30" />
@@ -98,6 +98,13 @@
           <field name="state" widget="statusbar" statusbar_visible="draft,open,approved,running,done,cancel" readonly="1"/>
         </header>
         <sheet>
+          <div class="oe_button_box" name="button_box">
+            <button type="object" 
+                    name="action_generate_account_invoice"
+                    class="oe_stat_button"
+                    icon="fa-pencil-square-o" attrs="{'invisible':[('state', '=', 'draft')]}">
+            </button> 
+          </div>
           <div class="oe_title">
             <label string="Draft Progress Bill" attrs="{'invisible': [('state','!=','draft')]}"/>
             <label string="Progress Bill" attrs="{'invisible': [('state','=','draft')]}"/>
