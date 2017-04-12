@@ -91,10 +91,10 @@
     <field name="arch" type="xml">
       <form string="Contractor Bill">
         <header>
-          <button name="button_confirm" type="object" states="draft" string="Confirm" class="oe_highlight" id="draft_confirm" groups="construction.group_senior_engineer"/>
-          <button name="button_draft" type="object" states="cancel" string="Set to Draft" groups="construction.group_senior_engineer" />
-          <button name="button_cancel" states="draft,open" string="Cancel" type="object" />
-          <button name="button_approve" type="object" string="Approve" states="open"/>
+          <button name="button_confirm" type="object" states="draft"      string="Confirm" class="oe_highlight" id="draft_confirm" groups="construction.group_senior_engineer"/>
+          <button name="button_draft"   type="object" states="cancel"     string="Set to Draft" groups="construction.group_senior_engineer" />
+          <button name="button_cancel" type="object"  states="draft,open" string="Cancel"  />
+          <button name="button_approve" type="object" string="Approve"    states="open"/>
           <field name="state" widget="statusbar" statusbar_visible="draft,open,approved,running,done,cancel" readonly="1"/>
         </header>
         <sheet>
@@ -161,8 +161,11 @@
                </form>
                 </field>
               <group class="oe_subtotal_footer oe_right">
-                <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field string="Net for current bill" name="amount_current_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field string="Total Progress"       name="amount_total"          widget="monetary" options="{'currency_field': 'currency_id'}" />
+                <field string="Total Penalties"      name="amount_total_penalty"  widget="monetary" options="{'currency_field': 'currency_id'}" />
+                <field string="Previous Total"       name="amount_previous_total" widget="monetary" options="{'currency_field': 'currency_id'}" />
+                <field string="Net for Current Bill" name="amount_current_total"  widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field string="Money Retention"      name="money_retention_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
               </group>
               <div class="oe_clear"/>
             </page>
@@ -195,6 +198,7 @@
     </field>
   </record>
   <!-- TREE VIEW FOR PROGRESS BILL -->
+
 
 
 </odoo>

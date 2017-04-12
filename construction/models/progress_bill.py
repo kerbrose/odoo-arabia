@@ -28,7 +28,6 @@ _logger = logging.getLogger(__name__)
 class ProgressBill(models.Model):
     _name = 'progress.bill'
     _inherit = ['mail.thread']
-    _inherits = {'account.invoice':'account_invoice_id'}
     _description = "Progress Invoice"
     _order = "date desc, number desc, id desc"
     
@@ -45,29 +44,54 @@ class ProgressBill(models.Model):
     def _compute_amount(self):
         #self.amount_net = 0.0
         self.amount_current_to_be_paid = 0.0
-        self.amount_previous_current_net = 0.0
-        self.money_retention_total = 0.0
+        #self.amount_previous_current_net = 0.0
+        #self.money_retention_total = 0.0
         #self.amount_total = 0.0
-        #self.previous_paid_total = 0.0
+        self.previous_paid_total = 0.0
         #self.previous_amount_total = 0.0
 
     @api.one
     @api.depends('progress_bill_line_ids')
     def _compute_amounts(self):
-            self.amount_current_total = 0.0
-            self.amount_total = 0.0
-            for line in self.progress_bill_line_ids:
-                self.amount_current_total += line.price_subtotal 
-                self.amount_total += line.price_total
+        self.amount_current_total = 0.0
+        self.amount_total = 0.0
+        self.amount_total_penalty = 0.0
+        for line in self.progress_bill_line_ids:
+            self.amount_current_total += line.price_subtotal 
+            self.amount_total += line.price_total
+            self.amount_total_penalty += line.discount_total
+            
+
+    @api.one
+    @api.depends('number', 'contract_id')
+    def _compute_amount_previous_total(self):
+        self.amount_previous_total = 0.0
+        previous_bill_number = Int(self.number) - 1
+        if previous_bill_number == 0:
+            self.amount_previous_total = 0.0
+        else:
+            for bill in self.contract_id.progress_bill_ids:
+                if bill.number == previous_bill_number:
+                    self.amount_previous_total == bill.amount_total
     
+    @api.one
+    @api.depends('amount_current_total', 'amount_total')
+    def _compute_money_retention(self):
+        # TODO: need not hard code the money retention value
+        self.money_retention_current = float(self.amount_current_total * 0.05)
+        self.money_retention_total = float(self.amount_total * 0.05)
         
+        
+        
+    
+    
     @api.model
     def _default_currency(self):
         return self.env.user.company_id.currency_id
     
     account_analytic_id = fields.Many2one('account.analytic.account', string='Project', required=True, states=READONLY_STATES)
     
-    #account_invoice_id = fields.Many2one('account.invoice', required=True, ondelete='restrict')
+    account_invoice_id = fields.Many2one('account.invoice', string='bill', required=True, ondelete='restrict')
     
     amount_current_total = fields.Monetary(string='Current Bill Net', store=True, readonly=True, compute='_compute_amounts')
     
@@ -75,9 +99,11 @@ class ProgressBill(models.Model):
     
     amount_previous_current_net = fields.Monetary(string='Current Bill Net', store=True, readonly=True, compute='_compute_amount')
     
-    amount_previous_total = fields.Monetary(string='Total Amount of Previous Bill', store=True, readonly=True, compute='_compute_amounts')
+    amount_previous_total = fields.Monetary(string='Total Amount of Previous Bill', store=True, readonly=True, compute='_compute_amount_previous_total')
     
     amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_compute_amounts')
+    
+    amount_total_penalty = fields.Monetary(string='Penalities', store=True, readonly=True, compute='_compute_amounts')
     
     comment = fields.Text('Additional Information', readonly=True, states=READONLY_STATES)
     
@@ -97,9 +123,9 @@ class ProgressBill(models.Model):
     
     last_bill = fields.Boolean(string='Last Bill')
     
-    money_retention_total = fields.Monetary(string='Total Money Retention', store=True, readonly=True, compute='_compute_amount')
+    money_retention_current = fields.Monetary(string='Money Retention', store=True, readonly=True, compute='_compute_money_retention')
     
-    name = fields.Char(string='Progress Bill', required=True, index=True, copy=False, default='New')
+    money_retention_total = fields.Monetary(string='Total Money Retention', store=True, readonly=True, compute='_compute_money_retention')
     
     number = fields.Integer(string='Number', required=True, states=READONLY_STATES)
     
@@ -151,6 +177,36 @@ class ProgressBill(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code('progress.bill') or '/'
         return super(ProgressBill, self.with_context(mail_create_nolog=True)).create(vals)
     
+    @api.multi
+    def action_generate_account_invoice(self):
+        for progress_bill in self:
+            AccountInvoice = self.env['account.invoice']
+            journal = self.env['account.journal'].search([('code', '=', 'PRJ')], limit=1)
+            invoice_vals = {'parnter_id': self.partner_id.id,
+                            'account_id': self.partner_id.property_account_payable_id.id,
+                            'journal_id': journal,
+                            }
+            invoice_lines = []
+            for line in progress_bill:
+                invoice_lines.append([0, False, {'account_analytic_id':progress_bill.account_analytic_id.id,
+                                                 'product_id': line.product_id.id,
+                                                 'csi_mf_id': line.csi_mf_id.id,
+                                                 'name': line.name,
+                                                 'partner_id': progress_bill.partner_id.id,
+                                                 'account_id': journal.default_debit_account_id.id,
+                                                 'quantity': line.quantity,
+                                                 'price_unit': line.price_unit,
+                                                 'uom_id': line.product_uom.id,
+                                                 }])
+            invoice_vals.update({'invoice_line_ids': invoice_lines})
+            invoice_id = AccountInvoice.create(invoice_vals)
+            action = self.env.ref('account.action_invoice_tree2')
+            result = action.read()[0]
+ 
+            result['domain'] = "[('id', '=', " + str(invoice_id.id) + ")]"
+        
+        return result
+    
     # Load all unsold PC lines
     @api.onchange('contract_id')
     def progress_bill_change(self):
@@ -193,7 +249,7 @@ class ProgressBillLine(models.Model):
         for line in self:
             line.qty_accepted = line.contract_line_id.product_qty
             for previous_line in line.contract_line_id.progress_bill_lines:
-                if previous_line.bill_id.id < line.bill_id.id:
+                if previous_line.bill_id.id < line.bill_id.id and (previous_line.bill_id.state != 'cancel' or previous_line.bill_id.state != 'draft'):
                     line.qty_previous += previous_line.quantity
                     line.discount_total += previous_line.discount    
     

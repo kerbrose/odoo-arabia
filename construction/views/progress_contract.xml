@@ -68,7 +68,7 @@
   <!-- MENU DRAFT SUBCONTRACT -->
   <menuitem
       id="draft_progress_contract_menu"
-      name="Draf Subcontracts"
+      name="Draft Subcontracts"
       action="draft_progress_contract_action"
       parent="construction.menu_subcontracting"
       sequence="10" />
