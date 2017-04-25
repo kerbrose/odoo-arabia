@@ -19,6 +19,22 @@
   </record>
   <!-- FORM VIEW: UPDATING FORM VIEW FOR ACCOUNT INVOICE TO ADD
        PROJECT FIELDS -->
+  
+  
+  <!-- FORM VIEW: UPDATING FORM VIEW FOR ACCOUNT INVOICE (TYPE SALES) TO ADD
+       PROJECT FIELDS -->
+  <record id="view_construction_account_invoice_form_inherit_sale" model="ir.ui.view">
+    <field name="name">construction.account_invoice</field>
+    <field name="model">account.invoice</field>
+    <field name="inherit_id" ref="account.invoice_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='payment_term_id']" position="after">
+        <field name="analytic_id" domain="[('tag_ids', '=', 'Project')]"/>
+      </xpath>
+    </field>
+  </record>
+  <!-- FORM VIEW: UPDATING FORM VIEW FOR ACCOUNT INVOICE (TYPE SALES) TO ADD
+       PROJECT FIELDS -->
 
 
 </odoo>
